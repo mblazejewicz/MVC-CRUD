@@ -1,0 +1,85 @@
+﻿@using System.Linq;
+@model WebApplicationMVC_CRUD.Models.PagedList<WebApplicationMVC_CRUD.DAL.Phones>
+@{
+    Layout = "~/Views/Shared/_PhonesAppLayout.cshtml";
+    ViewBag.Title = "Phone List";
+}
+
+<h1>Phone List</h1>
+<div class="well">
+    @using (Html.BeginForm("index", null, FormMethod.Get))
+    {
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="input-group">
+
+                    @*<input type="text"
+                           name="filter"
+                           value="@ViewBag.filter"
+                           class="form-control"
+                           style="display: inline"
+                           placeholder="Search by model and company" />*@
+                    @Html.TextBoxFor(x=> (Model.SearchConditions as WebApplicationMVC_CRUD.Models.PhoneSearchCondition).filter,new { placeholder = "Wyszukaj po nazwie modelu lub producenta",  @class = "form-control" } )
+                    @Html.DropDownListFor(m => (Model.SearchConditions as WebApplicationMVC_CRUD.Models.PhoneSearchCondition).ManufacturerId,
+                   new SelectList(ViewBag.ManufacturersList, "ManufacturerId", "Name"), "Dowolny producent", new {  @class = "form-control" })
+
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">Wyszukaj</button>
+                    </span>
+
+                </div>
+            </div>
+            <div class="pull-right col-lg-1">
+                <a class="btn btn-success" data-modal="" href="/Phone/Create" id="btnCreate">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </a>
+            </div>
+        </div>
+
+        <div style="margin-top:17px; height:300px; overflow:auto;">
+            @{
+                var grid = new WebGrid(
+                            canPage: true,
+                            rowsPerPage: Model.PageSize,
+                            canSort: true,
+                            ajaxUpdateContainerId: "grid");
+
+                grid.Bind(Model.Content, rowCount: Model.TotalRecords, autoSortAndPage: false);
+                grid.Pager(WebGridPagerModes.All);
+
+                @grid.GetHtml(htmlAttributes: new { id = "grid" },   // id for ajaxUpdateContainerId parameter
+            fillEmptyRows: false,
+            tableStyle: "table table-bordered table-hover",
+            mode: WebGridPagerModes.All,
+            columns: grid.Columns(
+              grid.Column("PhoneId", "ID"),
+              grid.Column("Model", "Model", style: "col-lg-4"),
+              grid.Column(format: @<text>@item.Manufacturers.Name</text>,header: "Company", style: "col-lg-3"),
+              grid.Column("Price", header: "Price", format: @<text>@String.Format("{0:C}", item.Price) </text>),
+              grid.Column(header: "Action", canSort: false, style: "action",
+                format: @<text>
+                @Html.Raw("<a data-modal='' href='/phone/details/" + item.PhoneId + "' id='" + item.PhoneId + "' title='Detail'> <span class='glyphicon glyphicon-search'> </span> </a>")
+                @Html.Raw("<a data-modal='' href='/phone/edit/" + item.PhoneId + "' id='" + item.PhoneId + "' title='Edit'> <span class='glyphicon glyphicon-edit'> </span> </a>")
+                @Html.Raw("<a data-modal='' href='/phone/delete/" + item.PhoneId + "' id='" + item.PhoneId + "' title='Delete'> <span class='glyphicon glyphicon-trash'> </span> </a>")
+                </text>)
+
+            ));
+            }
+
+
+        </div>
+                }
+</div>
+
+<!-- modal placeholder-->
+<div id='myModal' class='modal fade in'>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div id='myModalContent'></div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/scripts/appjs/phones.js")
+}

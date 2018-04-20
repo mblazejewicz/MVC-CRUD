@@ -1,0 +1,5 @@
+
+*.nupkg
+*.dll
+*.pdb
+packages/bootstrap.3.0.0/content/Content/bootstrap.min.css
